@@ -6,11 +6,34 @@
 /*   By: gdannay <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/14 19:25:50 by gdannay           #+#    #+#             */
-/*   Updated: 2017/11/20 12:25:51 by gdannay          ###   ########.fr       */
+/*   Updated: 2017/11/21 20:17:27 by gdannay          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
+#include <stdio.h>
+
+void			free_tmp(t_lst **lst, t_lst *tmp)
+{
+	t_lst	*bef;
+	t_lst	*nxt;
+
+	bef = (*lst);
+	nxt = tmp->next;
+	if ((*lst) == tmp)
+		(*lst) = (*lst)->next;
+	else
+	{
+		while (bef && bef->next != tmp)
+			bef = bef->next;
+		if (nxt == NULL)
+			bef->next = NULL;
+		else
+			bef->next = nxt;
+	}
+	free(tmp->txt);
+	free(tmp);
+}
 
 static char		*get_line(t_lst *tmp)
 {
@@ -20,11 +43,11 @@ static char		*get_line(t_lst *tmp)
 
 	i = 0;
 	j = 0;
-	while (tmp->txt[i] != '\n' && tmp->txt[i] != '\0')
+	while (tmp->txt && tmp->txt[i] != '\n' && tmp->txt[i] != '\0')
 		i++;
 	if ((new = (char *)malloc(sizeof(char) * (i + 1))) == NULL)
 		return (NULL);
-	while (j < i)
+	while (tmp->txt && j < i)
 	{
 		new[j] = tmp->txt[j];
 		j++;
@@ -61,17 +84,23 @@ static t_lst	*new_fd(int fd, t_lst **lst, t_lst *tmp)
 	return (new);
 }
 
+static t_lst	*parsing_chain(t_lst *lst, int fd)
+{
+	t_lst *tmp;
+
+	tmp = lst;
+	while (tmp && tmp->fd != fd)
+		tmp = tmp->next;
+	return (tmp);
+}
+
 int				get_next_line(const int fd, char **line)
 {
 	static t_lst	*lst = NULL;
 	t_lst			*tmp;
 	char			*tmptxt;
 
-	tmp = lst;
-	if (fd < 0)
-		return (-1);
-	while (tmp && tmp->fd != fd)
-		tmp = tmp->next;
+	tmp = parsing_chain(lst, fd);
 	if (tmp == NULL)
 	{
 		tmp = lst;
@@ -81,11 +110,14 @@ int				get_next_line(const int fd, char **line)
 			return (-1);
 	}
 	*line = get_line(tmp);
-	if (!(ft_strcmp(tmp->txt, "\0")) && !(ft_strcmp(*line, "\0")))
+	if (!(tmp->txt) || !(ft_strcmp(tmp->txt, "\0")) ||
+			ft_strcmp(tmp->txt, "\0") == 3 || ft_strcmp(tmp->txt, "\0") == 16)
+	{
+		free_tmp(&lst, tmp);
 		return (0);
+	}
 	tmptxt = tmp->txt;
-	tmp->txt = ft_strsub(tmptxt,
-			(unsigned int)(ft_strlen(*line) + 1), ft_strlen(tmp->txt));
+	tmp->txt = ft_strsub(tmptxt, (ft_strlen(*line) + 1), ft_strlen(tmp->txt));
 	free(tmptxt);
 	return (1);
 }
