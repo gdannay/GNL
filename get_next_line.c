@@ -55,8 +55,19 @@ static char		*get_line(t_lst *tmp)
 	int		j;
 	char	*new;
 
+	char	*txt;
+	char	buff[BUFF_SIZE];
+	int		ret;
+	char	*tmptxt;
 	i = 0;
 	j = 0;
+	while ((ret = read(fd, buff, BUFF_SIZE)) > 0 && check_str(txt) == 0)
+	{
+		buff[ret] = '\0';
+		tmptxt = txt;
+		txt = ft_strjoin(tmptxt, buff);
+		free(tmptxt);
+	}
 	while (tmp->txt && tmp->txt[i] != '\n' && tmp->txt[i] != '\0')
 		i++;
 	if ((new = (char *)malloc(sizeof(char) * (i + 1))) == NULL)
@@ -70,29 +81,17 @@ static char		*get_line(t_lst *tmp)
 	return (new);
 }
 
-static t_lst	*new_fd(int fd, t_lst **lst, t_lst *tmp)
+static t_lst	*new_fd(int fd, t_lst **lst)
 {
 	t_lst	*new;
-	char	*txt;
-	char	buff[BUFF_SIZE];
-	int		ret;
-	char	*tmptxt;
+	t_lst	*tmp;
 
-	if (tmp)
-		txt = ft_strdup(tmp->txt);
-	else
-		txt = NULL;
-	while ((ret = read(fd, buff, BUFF_SIZE)) > 0 && check_str(txt) == 0)
-	{
-		buff[ret] = '\0';
-		tmptxt = txt;
-		txt = ft_strjoin(tmptxt, buff);
-		free(tmptxt);
-	}
-	if ((new = (t_lst *)malloc(sizeof(t_list))) == NULL || ret == -1)
+	tmp = (*lst);
+	while (tmp->next != NULL)
+		tmp = tmp->next;
+	if ((new = (t_lst *)malloc(sizeof(t_list))) == NULL)
 		return (NULL);
 	new->next = NULL;
-	new->txt = txt;
 	new->fd = fd;
 	if ((*lst) == NULL)
 		(*lst) = new;
@@ -101,26 +100,18 @@ static t_lst	*new_fd(int fd, t_lst **lst, t_lst *tmp)
 	return (new);
 }
 
-static t_lst	*parsing_chain(t_lst *lst, int fd)
-{
-	t_lst *tmp;
-
-	tmp = lst;
-	while (tmp && tmp->fd != fd)
-		tmp = tmp->next;
-	return (tmp);
-}
-
-int				get_next_line(const int fd, char **line)
+int				get_next_line(int fd, char **line)
 {
 	static t_lst	*lst = NULL;
 	t_lst			*tmp;
 	char			*tmptxt;
 
-	tmp = parsing_chain(lst, fd);
-	if (tmp == NULL || (tmp && check_str(tmp->txt) == 0))
+	tmp = lst;
+	while (tmp && tmp->fd != fd)
+		tmp = tmp->next;
+	if (tmp == NULL)
 	{
-		if ((tmp = new_fd(fd, &lst, tmp)) == NULL)
+		if ((tmp = new_fd(fd, &lst) == NULL))
 			return (-1);
 	}
 	*line = get_line(tmp);
