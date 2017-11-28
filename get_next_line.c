@@ -35,6 +35,20 @@ void			free_tmp(t_lst **lst, t_lst *tmp)
 	free(tmp);
 }
 
+static int		check_str(char *str)
+{
+	int i;
+
+	i = 0;
+	while (str[i] != '\0')
+	{
+		if (str[i] == '\n')
+			return (1);
+		i++;
+	}
+	return (0);
+}
+
 static char		*get_line(t_lst *tmp)
 {
 	int		i;
@@ -64,8 +78,11 @@ static t_lst	*new_fd(int fd, t_lst **lst, t_lst *tmp)
 	int		ret;
 	char	*tmptxt;
 
-	txt = NULL;
-	while ((ret = read(fd, buff, BUFF_SIZE)) > 0)
+	if (tmp)
+		txt = ft_strdup(tmp->txt);
+	else
+		txt = NULL;
+	while ((ret = read(fd, buff, BUFF_SIZE)) > 0 && check_str(txt) == 0)
 	{
 		buff[ret] = '\0';
 		tmptxt = txt;
@@ -101,11 +118,8 @@ int				get_next_line(const int fd, char **line)
 	char			*tmptxt;
 
 	tmp = parsing_chain(lst, fd);
-	if (tmp == NULL)
+	if (tmp == NULL || (tmp && check_str(tmp->txt) == 0))
 	{
-		tmp = lst;
-		while (tmp && tmp->next != NULL)
-			tmp = tmp->next;
 		if ((tmp = new_fd(fd, &lst, tmp)) == NULL)
 			return (-1);
 	}
