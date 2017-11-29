@@ -6,12 +6,13 @@
 /*   By: gdannay <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/13 11:07:02 by gdannay           #+#    #+#             */
-/*   Updated: 2017/11/14 17:11:33 by gdannay          ###   ########.fr       */
+/*   Updated: 2017/11/29 13:47:04 by gdannay          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 char	*ft_strsub(char const *s, unsigned int start, size_t len)
 {
@@ -21,9 +22,9 @@ char	*ft_strsub(char const *s, unsigned int start, size_t len)
 	i = 0;
 	if (s == NULL)
 		return (NULL);
-	if ((new = (char *)malloc(sizeof(char) * (len + 1))) == NULL)
+	if ((new = (char *)malloc(sizeof(char) * (len - start + 1))) == NULL)
 		return (NULL);
-	while (i < len)
+	while (len > start && i < len - start)
 	{
 		new[i] = s[start + i];
 		i++;

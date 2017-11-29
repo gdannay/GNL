@@ -6,7 +6,7 @@
 /*   By: gdannay <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/09 19:54:19 by gdannay           #+#    #+#             */
-/*   Updated: 2017/11/13 14:18:34 by gdannay          ###   ########.fr       */
+/*   Updated: 2017/11/29 12:42:34 by gdannay          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,8 @@ char	*ft_strrchr(const char *s, int c)
 	i = 0;
 	j = -1;
 	b = (unsigned char)c;
+	if (!s)
+		return (NULL);
 	while (s[i] != '\0')
 	{
 		if (s[i] == b)

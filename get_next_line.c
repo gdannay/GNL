@@ -6,7 +6,7 @@
 /*   By: gdannay <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/14 19:25:50 by gdannay           #+#    #+#             */
-/*   Updated: 2017/11/21 20:17:27 by gdannay          ###   ########.fr       */
+/*   Updated: 2017/11/29 13:53:07 by gdannay          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,49 +35,32 @@ void			free_tmp(t_lst **lst, t_lst *tmp)
 	free(tmp);
 }
 
-static int		check_str(char *str)
-{
-	int i;
-
-	i = 0;
-	while (str[i] != '\0')
-	{
-		if (str[i] == '\n')
-			return (1);
-		i++;
-	}
-	return (0);
-}
-
 static char		*get_line(t_lst *tmp)
 {
 	int		i;
-	int		j;
 	char	*new;
-
-	char	*txt;
-	char	buff[BUFF_SIZE];
+	char	buff[BUFF_SIZE + 1];
 	int		ret;
 	char	*tmptxt;
+
 	i = 0;
-	j = 0;
-	while ((ret = read(fd, buff, BUFF_SIZE)) > 0 && check_str(txt) == 0)
+	while (ft_strchr(tmp->txt, '\n') == NULL &&
+			(ret = read(tmp->fd, buff, BUFF_SIZE)) > 0)
 	{
 		buff[ret] = '\0';
-		tmptxt = txt;
-		txt = ft_strjoin(tmptxt, buff);
+		tmptxt = tmp->txt;
+		tmp->txt = ft_strjoin(tmptxt, buff);
 		free(tmptxt);
 	}
+	if (ret == -1)
+		return (NULL);
 	while (tmp->txt && tmp->txt[i] != '\n' && tmp->txt[i] != '\0')
 		i++;
 	if ((new = (char *)malloc(sizeof(char) * (i + 1))) == NULL)
 		return (NULL);
-	while (tmp->txt && j < i)
-	{
-		new[j] = tmp->txt[j];
-		j++;
-	}
-	new[j] = '\0';
+	if (tmp->txt)
+		new = ft_strncpy(new, tmp->txt, (size_t)i);
+	new[i] = '\0';
 	return (new);
 }
 
@@ -87,11 +70,14 @@ static t_lst	*new_fd(int fd, t_lst **lst)
 	t_lst	*tmp;
 
 	tmp = (*lst);
-	while (tmp->next != NULL)
+	if (fd < 0)
+		return (NULL);
+	while (tmp && tmp->next != NULL)
 		tmp = tmp->next;
 	if ((new = (t_lst *)malloc(sizeof(t_list))) == NULL)
 		return (NULL);
 	new->next = NULL;
+	new->txt = NULL;
 	new->fd = fd;
 	if ((*lst) == NULL)
 		(*lst) = new;
@@ -111,10 +97,11 @@ int				get_next_line(int fd, char **line)
 		tmp = tmp->next;
 	if (tmp == NULL)
 	{
-		if ((tmp = new_fd(fd, &lst) == NULL))
+		if ((tmp = new_fd(fd, &lst)) == NULL)
 			return (-1);
 	}
-	*line = get_line(tmp);
+	if (!(line) || (*line = get_line(tmp)) == NULL)
+		return (-1);
 	if (!(tmp->txt) || !(ft_strcmp(tmp->txt, "\0")) ||
 			ft_strcmp(tmp->txt, "\0") == 3 || ft_strcmp(tmp->txt, "\0") == 16)
 	{
@@ -125,4 +112,17 @@ int				get_next_line(int fd, char **line)
 	tmp->txt = ft_strsub(tmptxt, (ft_strlen(*line) + 1), ft_strlen(tmp->txt));
 	free(tmptxt);
 	return (1);
+}
+
+int		main(int argc, char **argv)
+{
+	int fd = open(argv[1], O_RDONLY);
+	char *line;
+	while (get_next_line(fd, &line))
+	{
+		printf("%s\n", line);
+		free(line);
+	}
+	while (1);
+
 }
