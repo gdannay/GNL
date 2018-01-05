@@ -6,7 +6,7 @@
 /*   By: gdannay <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/14 19:25:50 by gdannay           #+#    #+#             */
-/*   Updated: 2017/11/29 13:53:07 by gdannay          ###   ########.fr       */
+/*   Updated: 2017/11/29 13:57:55 by gdannay          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,17 +112,4 @@ int				get_next_line(int fd, char **line)
 	tmp->txt = ft_strsub(tmptxt, (ft_strlen(*line) + 1), ft_strlen(tmp->txt));
 	free(tmptxt);
 	return (1);
-}
-
-int		main(int argc, char **argv)
-{
-	int fd = open(argv[1], O_RDONLY);
-	char *line;
-	while (get_next_line(fd, &line))
-	{
-		printf("%s\n", line);
-		free(line);
-	}
-	while (1);
-
 }
